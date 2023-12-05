@@ -1,0 +1,78 @@
+Reference-> https://medium.com/@sushantkapare1717/setup-prometheus-monitoring-on-kubernetes-using-grafana-fe09cb3656f7
+
+# Installing Helm
+-----------------------------
+
+# 1st method
+- curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+- sudo apt-get install apt-transport-https --yes
+- echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+- sudo apt-get update
+- sudo apt-get install helm
+
+--------OR-------
+
+# 2nd method
+- curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+- chmod 700 get_helm.sh
+- ./get_helm.sh
+
+-----------------------------
+
+# Add the Helm Stable Charts for your local client
+- helm repo add stable https://charts.helm.sh/stable
+
+
+# Adding prometh helm repo
+- helm repo add prometheus-community https://prometheus-community.github.io/helm-chart
+
+- helm search repo prometheus-community
+
+
+# Create Prometheus namespace
+- kubectl create namespace prometheus
+
+
+# Install kube-prometheus-stackInstall kube-prometheus-stack
+# The helm repo kube-stack-prometheus (formerly prometheus-operator) comes with a grafana deployment embedded.
+- helm install stable prometheus-community/kube-prometheus-stack -n prometheus
+
+# Check if prometheus and grafana pods are running already
+- kubectl get pods -n prometheus
+
+
+- kubectl get svc -n prometheus
+
+
+# In order to make prometheus and grafana available outside the cluster, use LoadBalancer or NodePort instead of ClusterIP.
+--------------------------------
+# Edit Prometheus Service
+- kubectl edit svc stable-kube-prometheus-sta-prometheus -n prometheus
+  Change ClusterIP to NodePort
+
+# Edit Grafana Service
+- kubectl edit svc stable-grafana -n prometheus
+  Change ClusterIP to NodePort
+
+--------------------------------
+
+
+# Access Prometheus & Grafana UI in the browser
+
+- kubectl get svc -n prometheus
+  
+***
+You will find out these 2 services
+
+stable-grafana                            NodePort    10.108.199.98    <none>        80:31503/TCP                    
+stable-kube-prometheus-sta-prometheus     NodePort    10.98.162.79     <none>        9090:30776/TCP,8080:31030/TCP 
+  
+So go to your instance and open these two ports according to those i.e 31503 & 30776 or 31030
+
+Now open 1st url on browser as http://<PublicIP>:31503
+Now open 2nd url on browser as http://<PublicIP>:30776 or http://<PublicIP>:31030
+ 
+In grafana Username- admin, Password- prom-operator
+
+
+***
